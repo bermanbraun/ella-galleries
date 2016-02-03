@@ -1,7 +1,7 @@
 from collections import defaultdict
+from collections import OrderedDict
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.utils.datastructures import SortedDict
 from django.core.cache import cache
 from django.core.validators import validate_slug
 
@@ -44,13 +44,13 @@ class Gallery(Publishable):
             for _, item in self._items.iteritems():
                 item.gallery = self
             return self._items
-        return SortedDict()
+        return OrderedDict()
 
     @cache_this(get_gallery_key)
     def _get_gallery_items(self):
         slugs_count = defaultdict(int)
         slugs_unique = set()
-        res = SortedDict()
+        res = OrderedDict()
 
         for item in self.galleryitem_set.order_by('order'):
             slug = item.get_item_slug()
