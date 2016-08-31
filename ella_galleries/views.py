@@ -2,6 +2,8 @@ from django.http import Http404
 from django.template.response import TemplateResponse
 from django.utils.translation import ungettext
 from django.utils.cache import patch_vary_headers
+from django.shortcuts import redirect
+from django.conf import settings
 
 from ella.core import custom_urls
 from ella.core.views import get_templates_from_publishable
@@ -12,6 +14,7 @@ def gallery_item_detail(request, context, item_slug=None, url_remainder=None):
     Returns ``GalleryItem`` object by its slug or first one (given by
     ``GalleryItem``.``order``) from ``Gallery``.
     '''
+
     gallery = context['object']
     item_sorted_dict = gallery.items
     count = len(item_sorted_dict)
@@ -33,7 +36,13 @@ def gallery_item_detail(request, context, item_slug=None, url_remainder=None):
         try:
             item = item_sorted_dict[item_slug]
         except KeyError:
-            raise Http404()
+            # check if flag is set then 301 to the main gallery url else 404 since slug was not found
+            GALLERY_REDIRECT_ENABLED = getattr(settings, 'GALLERY_REDIRECT_ENABLED', False)
+            if GALLERY_REDIRECT_ENABLED:
+                redirect_url =  request.path_info[0:request.path_info.find('/item/')+1] 
+                return redirect(redirect_url, permanent=True)
+            else:    
+                raise Http404()
         item_index = item_sorted_dict.keyOrder.index(item_slug)
         if item_index > 0:
             previous = item_sorted_dict.value_for_index(item_index - 1)
