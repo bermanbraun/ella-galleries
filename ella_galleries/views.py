@@ -41,8 +41,8 @@ def gallery_item_detail(request, context, item_slug=None, url_remainder=None):
             if GALLERY_REDIRECT_ENABLED:
                 redirect_url =  request.path_info[0:request.path_info.find('/item/')+1] 
                 return redirect(redirect_url, permanent=True)
-            else:    
-                raise Http404()
+            
+            raise Http404()
         item_index = item_sorted_dict.keyOrder.index(item_slug)
         if item_index > 0:
             previous = item_sorted_dict.value_for_index(item_index - 1)
