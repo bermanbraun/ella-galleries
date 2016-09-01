@@ -38,9 +38,8 @@ def gallery_item_detail(request, context, item_slug=None, url_remainder=None):
         except KeyError:
             # check if flag is set then 301 to the main gallery url else 404 since slug was not found
             GALLERY_REDIRECT_ENABLED = getattr(settings, 'GALLERY_REDIRECT_ENABLED', False)
-            if GALLERY_REDIRECT_ENABLED:
-                redirect_url =  request.path_info[0:request.path_info.find('/item/')+1] 
-                return redirect(redirect_url, permanent=True)
+            if GALLERY_REDIRECT_ENABLED: 
+                return redirect(gallery.get_absolute_url(), permanent=True)
             
             raise Http404()
         item_index = item_sorted_dict.keyOrder.index(item_slug)
