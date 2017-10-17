@@ -5,6 +5,8 @@ from django.utils.datastructures import SortedDict
 from django.core.cache import cache
 from django.core.validators import validate_slug
 
+from django.conf import settings
+
 from app_data import AppDataField
 
 from ella.core.models import Publishable
@@ -13,6 +15,7 @@ from ella.core.custom_urls import resolver
 from ella.core.views import get_templates_from_publishable
 from ella.photos.models import Photo
 
+ALLOW_PUBLISHABLE_SAVE_ON_PHOTO = getattr(settings, 'ALLOW_PUBLISHABLE_SAVE_ON_PHOTO', False)
 
 def get_gallery_key(gallery):
     return 'galitems:%d' % gallery.id
@@ -71,6 +74,15 @@ class Gallery(Publishable):
 
         return None
 
+    def save(self, **kwargs):
+        if ALLOW_PUBLISHABLE_SAVE_ON_PHOTO:
+            for key, item in self.items.iteritems():
+                item.save_publishable_on_photo()
+
+        super(Gallery, self).save(**kwargs)
+
+
+
 
 class GalleryItem(models.Model):
     """
@@ -128,6 +140,23 @@ class GalleryItem(models.Model):
 
     def get_templates(self, name):
         return get_templates_from_publishable(name, self.gallery)
+
+    def save_publishable_on_photo(self):
+        if self.gallery.is_published():
+            try:
+                recent_pub_id = self.photo.app_data.wonderwall.recent_pub
+                recent_pub = Publishable.objects.get(id=recent_pub_id)
+                if recent_pub.publish_from < self.gallery.publish_from:
+                    self.photo.app_data.wonderwall.recent_pub = self.gallery_id
+            except:
+                    self.photo.app_data["wonderwall"] = {"recent_pub": self.gallery_id}
+        self.photo.save()
+
+    def save(self):
+        if ALLOW_PUBLISHABLE_SAVE_ON_PHOTO:
+            self.save_publishable_on_photo();
+        super(GalleryItem, self).save()
+
 
 
 def invalidate_item_cache(instance, **kwargs):
