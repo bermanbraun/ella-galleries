@@ -142,7 +142,7 @@ class GalleryItem(models.Model):
         return get_templates_from_publishable(name, self.gallery)
 
     def save_publishable_on_photo(self):
-        if self.gallery.is_published():
+        if self.gallery.is_published() and self.photo:
             try:
                 recent_pub_id = self.photo.app_data.wonderwall.recent_pub
                 recent_pub = Publishable.objects.get(id=recent_pub_id)
@@ -150,7 +150,7 @@ class GalleryItem(models.Model):
                     self.photo.app_data.wonderwall.recent_pub = self.gallery_id
             except:
                     self.photo.app_data["wonderwall"] = {"recent_pub": self.gallery_id}
-        self.photo.save()
+            self.photo.save()
 
     def save(self):
         if ALLOW_PUBLISHABLE_SAVE_ON_PHOTO:
