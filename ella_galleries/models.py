@@ -144,12 +144,12 @@ class GalleryItem(models.Model):
     def save_publishable_on_photo(self):
         if self.gallery.is_published() and self.photo:
             try:
-                recent_pub_id = self.photo.app_data.wonderwall.recent_pub
+                recent_pub_id = self.photo.app_data.recent_pub
                 recent_pub = Publishable.objects.get(id=recent_pub_id)
                 if recent_pub.publish_from < self.gallery.publish_from:
-                    self.photo.app_data.wonderwall.recent_pub = self.gallery_id
+                    self.photo.app_data.recent_pub = self.gallery_id
             except:
-                    self.photo.app_data["wonderwall"] = {"recent_pub": self.gallery_id}
+                    self.photo.app_data["recent_pub"] =  self.gallery_id
             self.photo.save()
 
     def save(self):
