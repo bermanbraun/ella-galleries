@@ -142,6 +142,7 @@ class GalleryItem(models.Model):
         return get_templates_from_publishable(name, self.gallery)
 
     def save_publishable_on_photo(self):
+
         if self.gallery.is_published() and self.photo:
             try:
                 recent_pub_id = self.photo.app_data.recent_pub
@@ -155,6 +156,10 @@ class GalleryItem(models.Model):
     def save(self):
         if ALLOW_PUBLISHABLE_SAVE_ON_PHOTO:
             self.save_publishable_on_photo();
+            if self.gallery.is_published():
+                publish_date = self.gallery.publish_from.strftime("%D")
+
+                self.app_data["first_publish_date"] = publish_date
         super(GalleryItem, self).save()
 
 
